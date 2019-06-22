@@ -3,11 +3,10 @@ import {Card, Button, Pagination, Spin} from 'antd';
 import * as _ from 'lodash';
 import axios from 'axios';
 import memoize from 'memoize-one';
-
+import {storageKey, getCart} from '../../../common/cart';
 import {ShopDiv, StyledPrice, StyledProductList, StyledCard} from './styled';
 
 export default class Shop extends PureComponent {
-
     pageSize = 6;
 
     state = {
@@ -69,7 +68,22 @@ export default class Shop extends PureComponent {
         console.error(page)
 
         this.loadData(page)
-    }
+    };
+
+
+
+    onClickAddToCart = (e, index) =>{
+        let cart = getCart( storageKey);
+        const itemToCart = this.state.tmpData[index];
+
+        console.error('itemToCart',itemToCart)
+        cart.push(itemToCart);
+        cart = JSON.stringify(cart);
+        console.error('cart',cart);
+
+        localStorage.setItem(storageKey, cart);
+        console.error('e,index',e, index)
+    };
 
     loadData = memoize((page) => {
         /**request to the DB*/
@@ -134,7 +148,7 @@ export default class Shop extends PureComponent {
                                 })} </div>
 
                                 <StyledPrice><h5>{item.price}₴</h5></StyledPrice>
-                                <Button block type={'primary'}>Add to Cart</Button>
+                                <Button block type={'primary'} onClick={(e)=>this.onClickAddToCart(e, key)}>Add to Cart</Button>
                             </div>
                         }/>
                     </StyledCard>
