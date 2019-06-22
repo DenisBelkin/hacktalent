@@ -1,13 +1,16 @@
 import React, {PureComponent} from 'react';
-import {Card, Button, Pagination, Spin} from 'antd';
+import {Card, Button, Pagination, Spin, message} from 'antd';
 import * as _ from 'lodash';
 import axios from 'axios';
 import memoize from 'memoize-one';
 import {storageKey, getCart} from '../../../common/cart';
 import {ShopDiv, StyledPrice, StyledProductList, StyledCard} from './styled';
 
+import {CartPlus} from 'styled-icons/fa-solid/CartPlus';
+
 export default class Shop extends PureComponent {
     pageSize = 6;
+    defaultAmount = 0;
 
     state = {
         isLoading: false,
@@ -15,77 +18,114 @@ export default class Shop extends PureComponent {
             {
                 name: 'T-Shirt Blue',
                 description: 'blahblahblahblahblahblahblah-blah',
+                amount:this.defaultAmount,
                 price: 4110
             },
             {
                 name: 'T-Shirt Bold',
                 description: '88blahblahblahblahblahblahblah-blah',
+                amount:this.defaultAmount,
+
                 price: 1510
             },
             {
                 name: 'T-Shirt Gold',
                 description: '7blahblahblahblahblahblahblah-blah',
+                amount:this.defaultAmount,
+
                 price: 6110
             }, {
                 name: 'T-Shirt Dark-Blue',
                 description: 'blahblahblahblahblahblahblah-blah',
+                amount:this.defaultAmount,
+
                 price: 910
             }, {
                 name: 'T-Shirt Light-Blue',
                 description: 'blahblahblahblahblahblahblah-blah',
+                amount:this.defaultAmount,
+
                 price: 9910
             },
             {
                 name: 'T-Shirt Light',
                 description: 'blahblahblahblahblahblahblah-b3333lah',
+                amount:this.defaultAmount,
+
                 price: 1160
             },
             {
                 name: 'T-Shirt Dark',
                 description: 'blablahblahblahblahh-b444lah',
+                amount:this.defaultAmount,
+
                 price: 1510
             },
             {
                 name: 'T-Shirt Green',
                 description: 'blah3-bblahblahblahblahlah',
+                amount:this.defaultAmount,
+
                 price: 1510
             },
             {
                 name: 'T-Shirt Red',
                 description: 'bl1ah-blah',
+                amount:this.defaultAmount,
+
                 price: 11
             },
             {
                 name: 'T-Shirt Brown',
                 description: 'bla5hblah-blah',
+                amount:this.defaultAmount,
+
                 price: 1310
             },
         ],
         offset: 0,
     };
 
-    onChangePagination = (page) =>{
+    onChangePagination = (page) => {
         console.error(page)
 
         this.loadData(page)
     };
 
 
-
-    onClickAddToCart = (e, index) =>{
-        let cart = getCart( storageKey);
+    onClickAddToCart = memoize(( index) => {
+        let cart = getCart(storageKey);
         const itemToCart = this.state.tmpData[index];
 
-        console.error('itemToCart',itemToCart)
+        console.error('itemToCart', itemToCart)
         cart.push(itemToCart);
+
+
+        /// CHECK AMOUNT
+        _.map(cart, item=>{
+
+
+            if((item.name=== this.state.tmpData[index].name )&& item.amount>1) {
+                item.amount++
+            } else if (this.state.tmpData[index]===0){
+                this.state.tmpData[index].amount = 1;
+            }
+        });
+        cart = _.uniqBy(cart,(item)=> item.name);
+
+
+        ///
+
         cart = JSON.stringify(cart);
-        console.error('cart',cart);
+        console.error('cart', cart);
 
         localStorage.setItem(storageKey, cart);
-        console.error('e,index',e, index)
-    };
+        console.error('e,index', index)
 
-    loadData = memoize((page) => {
+        message.success(<span><b>"{this.state.tmpData[index].name}"</b> has been added to your cart!!!</span>)
+    });
+
+    loadData = (page) => {
         /**request to the DB*/
         this.setState({isLoading: true});
         const {offset} = this.state;
@@ -100,7 +140,7 @@ export default class Shop extends PureComponent {
                 console.error(res)
                 console.error('loading', this.state.isLoading)
 
-                this.setState({isLoading: false, offset: page*this.pageSize})
+                this.setState({isLoading: false, offset: page * this.pageSize})
                 this.getData(/*res.data*/)
             })
             .then(() => {
@@ -108,18 +148,20 @@ export default class Shop extends PureComponent {
                 console.error('state', this.state)
             })
 
-    });
+    };
 
     componentDidMount() {
         this.loadData();
     }
 
-    getData(){
-        this.setState({currentData: _.map(this.state.tmpData, (item,key)=>{
-                if(key !== this.state.offset+this.pageSize || key >= this.state.offset){
+    getData() {
+        this.setState({
+            currentData: _.map(this.state.tmpData, (item, key) => {
+                if (key !== this.state.offset + this.pageSize || key >= this.state.offset) {
                     return item;
                 } else return;
-            })})
+            })
+        })
     }
 
 
@@ -148,7 +190,8 @@ export default class Shop extends PureComponent {
                                 })} </div>
 
                                 <StyledPrice><h5>{item.price}₴</h5></StyledPrice>
-                                <Button block type={'primary'} onClick={(e)=>this.onClickAddToCart(e, key)}>Add to Cart</Button>
+                                <Button block type={'primary'} onClick={(event) => this.onClickAddToCart(key)}>Add to
+                                    Cart <CartPlus size={'15px'}/> </Button>
                             </div>
                         }/>
                     </StyledCard>
