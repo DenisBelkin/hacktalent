@@ -12,3 +12,8 @@ export const getCart = () => {
 
     return cart;
 };
+
+export const urls = {
+        host: 'http://localhost:8080',
+        viewList: '/viewList'
+};

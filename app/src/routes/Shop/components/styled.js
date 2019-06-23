@@ -23,6 +23,10 @@ export const StyledCard = styled(Card)`
    width: 200px;
 `;
 
+export const StyledProductTitle = styled.div`
+text-align: center;
+`;
+
 export const StyledPrice = styled.div`
     width:60px;
     height:30px;
